@@ -1,5 +1,6 @@
 import sys, cv2
-import pyautogui
+import pyautogui, dlib
+import numpy as np
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
@@ -48,18 +49,30 @@ class GameStart(QWidget):
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1000)
         self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 850)
 
-        self.face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+        detector = dlib.get_frontal_face_detector()
+        predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
+
         while True:
             ret, frame = self.capture.read()
-
             #frame.shape[0] = 세로길이, frame.shape[1] = 가로길이
             cv2.line(frame, (0, 100), (frame.shape[1], 100), (0, 0, 255), 3)
 
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            faces = self.face_cascade.detectMultiScale(gray, 1.3, 5)
+            faces = detector(frame)
 
-            for (x, y, w, h) in faces:
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 2)
+            for face in faces:
+                dlib_shape = predictor(frame, face)
+                shape_2d = np.array([[p.x, p.y] for p in dlib_shape.parts()])
+
+            frame = cv2.rectangle(frame, pt1=(face.left(), face.top()), pt2=(face.right(), face.bottom()), color=(255,255,255))
+
+            for s in shape_2d:
+                cv2.circle(frame, center=tuple(s), radius=1, color=(255, 255, 255), thickness=2, lineType=cv2.LINE_AA)
+
+            # faces = self.face_cascade.detectMultiScale(gray, 1.3, 5)
+            #
+            # for (x, y, w, h) in faces:
+            #     cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 2)
 
             cv2.imshow("face_rhythm", frame)
 
