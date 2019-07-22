@@ -1,6 +1,5 @@
 import sys, cv2
-
-from PyQt5.QtCore import QCoreApplication
+import pyautogui
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
@@ -49,7 +48,6 @@ class GameStart(QWidget):
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1000)
         self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 850)
 
-
         self.face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
         while True:
             ret, frame = self.capture.read()
@@ -87,18 +85,28 @@ class GameStart(QWidget):
         restart_game = QPushButton('Restart', self)
         restart_game.move(180, 250)
         restart_game.resize(220, 55)
+        restart_game.clicked.connect(self.restartGame)
 
         replay_game = QPushButton('Replay', self)
         replay_game.move(180,360)
         replay_game.resize(220, 55)
-        replay_game.clicked.connect(self.close)
+        replay_game.clicked.connect(self.replayGame)
 
         exit_btn = QPushButton('Exit', self)
         exit_btn.move(180, 470)
         exit_btn.resize(220, 55)
         exit_btn.clicked.connect(sys.exit)
 
+    def replayGame(self):
         self.close()
+        pyautogui.press('a')
+
+    def restartGame(self):
+        self.close()
+        self.capture.release()
+        cv2.destroyAllWindows()
+
+        self.camUI()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
